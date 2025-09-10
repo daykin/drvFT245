@@ -30,6 +30,8 @@ $(foreach dir, $(filter %Top, $(DIRS)), \
 # iocBoot depends on all *App dirs
 iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
 
+testApp_DEPEND_DIRS += drvFT245App
+
 # Add any additional dependency rules here:
 
 include $(TOP)/configure/RULES_TOP

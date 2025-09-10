@@ -30,6 +30,7 @@ drvFT245_SRCS += drvFT245.cpp
 
 USR_CPPFLAGS += $(shell pkg-config --cflags libftdi1)
 USR_LDFLAGS += $(shell pkg-config --libs libftdi1)
+LIB_SYS_LIBS += ftdi1 usb-1.0
 
 #External module: libftdi1
 
