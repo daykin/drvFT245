@@ -1,8 +1,11 @@
 #ifndef ASYN_FT245_H
 #define ASYN_FT245_H
-#include <asynPortDriver.h>
 #include <libftdi1/ftdi.h>
-#include <unistd.h>
+
+#include <asynPortDriver.h>
+#include <epicsThread.h>
+#include <epicsExport.h>
+#include <iocsh.h>
 
 #define serialNumberString      "serialNumber"
 #define manufacturerString      "manufacturer"
@@ -22,6 +25,8 @@ class drvFT245 : public asynPortDriver {
         virtual asynStatus readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask);
         virtual asynStatus writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask);
         int serialNumber;
+        //Must be public, called from C
+        void pinPollTask();
         #define FIRST_FT245_PARAM serialNumber
         int manufacturer;
         int deviceDescription;
@@ -33,6 +38,5 @@ class drvFT245 : public asynPortDriver {
     private:
         struct ftdi_context *ftdi;
         struct ftdi_version_info version;
-        void pinPollTask();
 };
 #endif //ASYN_FT245_H

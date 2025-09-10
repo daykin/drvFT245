@@ -78,6 +78,7 @@ drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
                 asynPrint(pasynUserSelf, ASYN_TRACEINFO_SOURCE, "%s:%s: Opened device connection.\n");
             }
             ftdi_list_free(&devices);
+            epicsThreadCreate("pinPollTask", 0, 0, &pinPollTaskC, this);
         }
     }
 
@@ -127,6 +128,11 @@ asynStatus drvFT245::writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, 
     status |= asynPortDriver::writeUInt32Digital(pasynUser, value, mask);
 }
 
+static void pinPollTaskC(void* drvPvt){
+    drvFT245 *pPvt = (drvFT245 *)drvPvt;
+    pPvt->pinPollTask();
+}
+
 void drvFT245::pinPollTask(){
     //No interrupt line is available. continuously sample D0-D7 at 10Hz
     //raise a software I/O Intr and update pinStates when something changes
@@ -146,4 +152,30 @@ void drvFT245::pinPollTask(){
         }
         lastValue=value;
     }
+}
+
+extern "C" int drvFT245Config(const char *portName, const unsigned& deviceIndex){
+    new drvFT245(portName, deviceIndex);
+    return asynSuccess;
+}
+
+static const iocshArg FT245DriverConfigArg0 = {"Port Name", iocshArgString};
+static const iocshArg FT245DriverConfigArg1 = {"Device Index", iocshArgInt};
+
+static const iocshArg * const FT245DriverConfigArgs[] = {&FT245DriverConfigArg0,
+                                                         &FT245DriverConfigArg1};
+
+static const iocshFuncDef configFT245Driver = {"drvFT245Config", 2, FT245DriverConfigArgs};
+static void configFT245DriverCallFunc(const iocshArgBuf *args)
+{
+    drvFT245Config(args[0].sval, args[1].ival);
+}
+
+static void drvFT245Register(void)
+{
+    iocshRegister(&configFT245Driver, configFT245DriverCallFunc);
+}
+
+extern "C" {
+    epicsExportRegistrar(drvFT245Register);
 }
