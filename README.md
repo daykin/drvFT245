@@ -1,0 +1,3 @@
+# drvFT245
+
+This module is an asynPortDriver implementation for directly controlling ("bit banging") the parallel port pins D0-D7 on FTD2xxx USB-to-FIFO chips. The original purpose is augmenting a desktop server to interface with the FRIB Machine Protection System over a non-networked connection. For fully implemented serial/parallel communication, you'll want something else, probably just a StreamDevice support module.

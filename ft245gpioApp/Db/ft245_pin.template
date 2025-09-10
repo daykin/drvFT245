@@ -1,0 +1,46 @@
+# does nothing if pin is an input
+record(bo, "$(D):EN_CMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) Set")
+    field(ZNAM, "Unset")
+    field(ONAM, "Set")
+    field(FLNK, "$(D):EN_CMD_PINS")
+    info(autosaveFields, "VAL")
+}
+
+#if pin is input, this is a sample. if it's an output, it's the driven status readback.
+record(calc, "_$(D):EN_RCMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) Set")
+    field(INPA, "$(D):EN_RCMD_PINS CPP MS")
+    field(CALC, "A>>$(N) & 1")
+    field(FLNK, "$(D):EN_RCMD_PIN$(N)")
+}
+
+record(bi, "$(D):EN_RCMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) Set?")
+    field(INP, "_$(D):EN_RCMD_PIN$(N) NPP MS")
+    field(ZNAM, "Disabled")
+    field(ONAM, "Enabled")
+}
+
+record(bo, "$(D):MODE_CMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) direction")
+    field(ZNAM, "Input")
+    field(ONAM, "Output")
+    field(FLNK, "$(D):MODE_CMD_PINS")
+    info(autosaveFields, "VAL")
+}
+
+record(calc, "_$(D):MODE_RCMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) Direction")
+    field(INPA, "$(D):MODE_RCMD_PINS CPP MS")
+    field(CALC, "A>>$(N) & 1")
+    field(FLNK, "$(D):MODE_RCMD_PIN$(N)")
+}
+
+record(bi, "$(D):MODE_RCMD_PIN$(N)"){
+    field(DESC, "GPIO pin $(N) Direction")
+    field(INP, "_$(D):MODE_RCMD_PIN$(N) NPP MS")
+    field(ZNAM, "Input")
+    field(ONAM, "Output")
+}
+

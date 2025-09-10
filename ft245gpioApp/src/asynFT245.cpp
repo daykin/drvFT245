@@ -1,0 +1,149 @@
+#include "asynFT245.h"
+
+static const char* driverName = "asynFT245";
+
+drvFT245::drvFT245(const std::string& portName)
+    :asynPortDriver(portName.c_str(),
+    1,//Max Signals
+    NUM_PARAMS,
+    asynUInt32DigitalMask|asynOctetMask,//iface mask
+    0,//interrupt mask
+    1,
+    0,
+    0)
+    {
+        drvFT245(portName, 0);
+    }
+
+drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
+    :asynPortDriver(portName.c_str(),
+    1,//Max Signals
+    NUM_PARAMS,
+    asynUInt32DigitalMask|asynOctetMask,//iface mask
+    0,//interrupt mask
+    1,
+    0,
+    0)
+    {
+        const char *functionName = "drvFT245";
+        int status = asynSuccess;
+        status |= createParam(serialNumberString, asynParamOctet, &serialNumber);
+        status |= createParam(manufacturerString, asynParamOctet, &manufacturer);
+        status |= createParam(deviceDescriptionString, asynParamOctet, &deviceDescription);
+        status |= createParam(deviceIdString, asynParamInt32, &deviceId);
+        status |= createParam(pinDirectionString, asynParamUInt32Digital, &pinDirection);
+        status |= createParam(pinSettingString, asynParamUInt32Digital, &pinSetting);
+        status |= createParam(ftdiVersionString, asynParamOctet, &ftdiVersion);
+        if((ftdi=ftdi_new())!=0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to initialize libftdi context.\n", driverName, functionName);
+            status=asynError;
+        }
+        else{
+            asynPrint(pasynUserSelf, ASYN_TRACEINFO_SOURCE, "%s:%s: Initialized libftdi context.\n");
+        }
+        char *versionString[8];
+        version = ftdi_get_library_version();
+        sprintf(*versionString, "%d.%d.%d", version.major, version.minor, version.micro);
+        status |= setStringParam(ftdiVersion, (const char*)versionString);
+
+        struct ftdi_device_list *devices, *device, *deviceToOpen;
+        int nDevices;
+        if(nDevices=ftdi_usb_find_all(ftdi, &devices, FT245_VENDOR_ID, FT245_DEVICE_ID)<0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to enumerate FT245 devices (usb_find_all() failed).\n", driverName, functionName);
+        }
+        else{
+            char manufacturer[128], desc[128], serial[128];
+            int i=0;
+            int usedDeviceIndex=deviceIndex;
+            if (deviceIndex>nDevices){
+                asynPrint(pasynUserSelf, ASYN_TRACE_WARNING, "Index %d was specified but there are only %d devices seen. Defaulting to 0.\n", nDevices, deviceIndex);
+                usedDeviceIndex = 0;
+            }
+            asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "%s:%s: I see the following devices:\n");
+            for(device=devices;device->next!=NULL;i++){
+                ftdi_usb_get_strings(ftdi, device->dev, (char*)manufacturer, 128, (char*)desc, 128, (char*)serial, 128);
+                asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "Index %d: Manufacturer %s, Description %s, Serial %s\n", i, manufacturer, desc, serial);
+                if(i==usedDeviceIndex){
+                    deviceToOpen=device;
+                    setIntegerParam(deviceId, i);
+                    setStringParam(serialNumber, serial);
+                    setStringParam(deviceDescription, desc);
+                } 
+                device=device->next;
+            }
+            if(ftdi_usb_open_dev(ftdi, deviceToOpen->dev)<0){
+                asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to open FTDI device (usb_open() failed).\n", driverName, functionName);
+            }
+            else{
+                asynPrint(pasynUserSelf, ASYN_TRACEINFO_SOURCE, "%s:%s: Opened device connection.\n");
+            }
+            ftdi_list_free(&devices);
+        }
+    }
+
+asynStatus drvFT245::readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask){
+    int status = asynSuccess;
+    const char *functionName="readUInt32Digital";
+    const int function(pasynUser->reason);
+    if(function==pinSetting){
+        unsigned char pinStates = 0x0;
+        if(ftdi_read_pins(ftdi, &pinStates) <0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s:Failed to read pin states.\n", driverName, functionName);
+            status = asynError;
+        }
+        else{
+            asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "%s:%s pin state: %#04x", driverName, functionName, (unsigned)pinSetting);
+            *value = pinStates;
+        }
+    }
+    asynPortDriver::readUInt32Digital(pasynUser, value, mask);
+    return (asynStatus)status;
+}
+
+asynStatus drvFT245::writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask){
+    int status = asynSuccess;
+    const char *functionName="writeUInt32Digital";
+    int function(pasynUser->reason);
+    if(function == pinDirection){
+        value &= mask & 0xFF;
+        if(ftdi_set_bitmode(ftdi, (unsigned char)value, BITMODE_BITBANG) < 0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s:Failed to set pin directions.\n", driverName, functionName);
+            status = asynError;
+        }
+        else{
+            asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "%s:%s set pin directions: %#04x", driverName, functionName, (unsigned)value);
+        }
+    }
+    else if(function == pinSetting){
+        value &= mask & 0xFF;
+        if(ftdi_write_data(ftdi, (unsigned char*)&value, 1) < 0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s:Failed to set pin values.\n", driverName, functionName);
+            status = asynError;
+        }
+        else{
+            asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "%s:%s pin values written: %#04x", driverName, functionName, (unsigned)value);
+        }
+    }
+    status |= asynPortDriver::writeUInt32Digital(pasynUser, value, mask);
+}
+
+void drvFT245::pinPollTask(){
+    //No interrupt line is available. continuously sample D0-D7 at 10Hz
+    //raise a software I/O Intr and update pinStates when something changes
+    unsigned char lastValue = 0x00;
+    unsigned char value = 0x00;
+    int ret = 0;
+    const char *functionName = "pinPollTask";
+    while(1){
+        epicsThreadSleep(0.1);
+        if(ret=ftdi_read_pins(ftdi, &value)<0){
+            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Driver Failed to read pins (%d)\n", driverName, functionName, ret);
+        }
+        if(value != lastValue){
+            setUIntDigitalParam(pinSetting, (epicsUInt32)value, 0xFF);
+            callParamCallbacks();
+            asynPrint(pasynUserSelf, ASYN_TRACE_FLOW, "%s:%s:Detected change on pins (%#04x->%#04x)",driverName, functionName, lastValue, value);
+        }
+        lastValue=value;
+    }
+}
