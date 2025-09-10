@@ -1,5 +1,5 @@
-#ifndef ASYN_FT245_H
-#define ASYN_FT245_H
+#ifndef DRVFT245_H
+#define DRVFT245_H
 #include <libftdi1/ftdi.h>
 
 #include <asynPortDriver.h>
@@ -39,4 +39,4 @@ class drvFT245 : public asynPortDriver {
         struct ftdi_context *ftdi;
         struct ftdi_version_info version;
 };
-#endif //ASYN_FT245_H
+#endif //DRVFT245_H
