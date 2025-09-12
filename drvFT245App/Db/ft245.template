@@ -1,95 +1,87 @@
 substitute "N=0"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=1"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=2"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=3"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=4"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=5"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=6"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 substitute "N=7"
-include "ft245_pin.db"
+include "ft245_pin.template"
 
 record(stringin, "$(D):SERIAL"){
     field(DESC, "Serial number of this FT245")
     field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT), 0, $(TIMEOUT))serialNumber")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))serialNumber")
 }
 
-record(stringin, "$(D):ID")
+record(stringin, "$(D):ID"){
     field(DESC, "Device ID of this FT245")
     field(DTYP, "asynOctetRead")
-    field(INP, "@asyn($(PORT),0, $(TIMEOUT))deviceID")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))deviceID")
+}
+
+record(stringin, "$(D):MANUFACTURER"){
+    field(DESC, "Device ID of this FT245")
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))manufacturer")
+}
+
+record(stringin, "$(D):DESCRIPTION"){
+    field(DESC, "Description of this FT245")
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))deviceDescription")
+}
+
+record(stringin, "$(D):SWVER_RD_FTDI"){
+    field(DESC, "libftdi version")
+    field(DTYP, "asynOctetRead")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))")
+}
 
 record(mbboDirect, "$(D):MODE_CMD_PINS"){
     field(DESC, "Pin direction setting")
     field(DTYP, "asynUInt32Digital")
-    field(OUT, "@asyn($(PORT), 0, $(TIMEOUT))pinDirection")
+    field(OUT, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinDirection")
     field(NOBT, "8")
-    field(B0, "$(D):MODE_CMD_PIN0")
-    field(B1, "$(D):MODE_CMD_PIN1")
-    field(B2, "$(D):MODE_CMD_PIN2")
-    field(B3, "$(D):MODE_CMD_PIN3")
-    field(B4, "$(D):MODE_CMD_PIN4")
-    field(B5, "$(D):MODE_CMD_PIN5")
-    field(B6, "$(D):MODE_CMD_PIN6")
-    field(B7, "$(D):MODE_CMD_PIN7")
 }
 
 record(mbboDirect, "$(D):MODE_RCMD_PINS"){
     field(DESC, "Pin direction setting")
-    field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT), 0, $(TIMEOUT))pinDirection")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinDirection")
     field(SCAN, "I/O Intr")
     field(NOBT, "8")
-    field(B0, "$(D):MODE_RCMD_PIN0")
-    field(B1, "$(D):MODE_RCMD_PIN1")
-    field(B2, "$(D):MODE_RCMD_PIN2")
-    field(B3, "$(D):MODE_RCMD_PIN3")
-    field(B4, "$(D):MODE_RCMD_PIN4")
-    field(B5, "$(D):MODE_RCMD_PIN5")
-    field(B6, "$(D):MODE_RCMD_PIN6")
-    field(B7, "$(D):MODE_RCMD_PIN7")
 }
 
 record(mbboDirect, "$(D):EN_CMD_PINS"){
     field(DESC, "Pin write")
-    field(DTYP, "asynInt32")
-    field(OUT, "@asyn($(PORT), 0, $(TIMEOUT))pinSetting)")
-    field(B0, "$(D):EN_CMD_PIN0")
-    field(B1, "$(D):EN_CMD_PIN1")
-    field(B2, "$(D):EN_CMD_PIN2")
-    field(B3, "$(D):EN_CMD_PIN3")
-    field(B4, "$(D):EN_CMD_PIN4")
-    field(B5, "$(D):EN_CMD_PIN5")
-    field(B6, "$(D):EN_CMD_PIN6")
-    field(B7, "$(D):EN_CMD_PIN7")
-    field(MASK, "$(D):MODE_CMD_PINS CPP MS")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinSetting")
 }
 
 record(mbbiDirect, "$(D):EN_RCMD_PINS"){
-    field(DESC, "Pin write mask")
-    field(DTYP, "asynInt32")
-    field(SCAN, "asyn")
-    field(INP, "@asyn($(PORT), 0, $(TIMEOUT))pinSetting")
-    field(B0, "$(D):EN_RCMD_PIN0")
-    field(B1, "$(D):EN_RCMD_PIN1")
-    field(B2, "$(D):EN_RCMD_PIN2")
-    field(B3, "$(D):EN_RCMD_PIN3")
-    field(B4, "$(D):EN_RCMD_PIN4")
-    field(B5, "$(D):EN_RCMD_PIN5")
-    field(B6, "$(D):EN_RCMD_PIN6")
-    field(B7, "$(D):EN_RCMD_PIN7")
+    field(DESC, "Pins status")
+    field(DTYP, "asynUInt32Digital")
+    field(SCAN, "I/O Intr")
+    field(INP, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinSetting")
 }
+
+substitute "SIGNAL=0, PBUS=0, NBUS=1"
+include "differential_pair.template"
+
+substitute "SIGNAL=1, PBUS=2, NBUS=3"
+include "differential_pair.template"

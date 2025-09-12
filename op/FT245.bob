@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <macros>
+    <D>TEST_FT245</D>
+  </macros>
+  <width>150</width>
+  <height>200</height>
+  <widget type="byte_monitor" version="2.0.0">
+    <name>Byte Monitor</name>
+    <pv_name>$(D):EN_RCMD_PINS</pv_name>
+    <x>100</x>
+    <y>20</y>
+    <width>20</width>
+    <height>160</height>
+    <bitReverse>true</bitReverse>
+    <horizontal>false</horizontal>
+    <square>true</square>
+  </widget>
+  <widget type="template" version="2.0.0">
+    <name>Template/Instance</name>
+    <file>_FT245_Toggles.bob</file>
+    <instances>
+      <instance>
+        <macros>
+          <N>0</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>1</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>2</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>3</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>4</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>5</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>6</N>
+        </macros>
+      </instance>
+      <instance>
+        <macros>
+          <N>7</N>
+        </macros>
+      </instance>
+    </instances>
+    <x>10</x>
+    <y>20</y>
+    <width>80</width>
+    <height>160</height>
+    <gap>0</gap>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label</name>
+    <text>Dir.</text>
+    <x>10</x>
+    <width>30</width>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_1</name>
+    <text>Write</text>
+    <x>50</x>
+    <width>40</width>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
+  </widget>
+  <widget type="bool_button" version="2.0.0">
+    <name>Boolean Button_2</name>
+    <pv_name>$(D):EN_CMD_PAIR0</pv_name>
+    <x>20</x>
+    <y>210</y>
+    <off_label>Live OK</off_label>
+    <on_label>Live NOK</on_label>
+  </widget>
+  <widget type="bool_button" version="2.0.0">
+    <name>Boolean Button_3</name>
+    <pv_name>$(D):EN_CMD_PAIR1</pv_name>
+    <x>20</x>
+    <y>250</y>
+    <off_label>Latch OK</off_label>
+    <on_label>Latch NOK</on_label>
+  </widget>
+</display>

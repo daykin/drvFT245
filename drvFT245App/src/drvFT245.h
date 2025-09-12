@@ -8,7 +8,7 @@
 #include <iocsh.h>
 #include <string.h>
 
-#define serialNumberString      "FT245serialNumber"
+#define serialNumberString      "serialNumber"
 #define manufacturerString      "manufacturer"
 #define deviceDescriptionString "deviceDescription"
 #define deviceIdString          "deviceID"
@@ -28,12 +28,15 @@ class drvFT245 : public asynPortDriver {
         virtual asynStatus readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason);
         //Must be public, called from C
         void pinPollTask();
-        int FT245serialNumber;
+        int serialNumber;
         #define FIRST_FT245_PARAM FT245serialNumber
+        int manufacturer;
         int deviceDescription;
+        int deviceID;
         int pinDirection;
         int pinSetting;
-        #define NUM_PARAMS 4
+        int ftdiVersion;
+        #define NUM_PARAMS 7
     private:
         struct ftdi_context *ftdi;
         struct ftdi_version_info version;

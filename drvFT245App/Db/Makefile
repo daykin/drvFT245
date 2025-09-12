@@ -11,7 +11,8 @@ include $(TOP)/configure/CONFIG
 # Create and install (or just install) into <top>/db
 # databases, templates, substitutions like this
 DB += ft245_pin.template
-DB += ft245.template
+DB += ft245.db
+DB += differential_pair.template
 DB += ft245-simple.db
 
 #----------------------------------------------------

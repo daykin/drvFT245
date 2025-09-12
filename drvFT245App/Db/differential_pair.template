@@ -1,0 +1,24 @@
+record(bo, "$(D):EN_CMD_PAIR$(SIGNAL)"){
+    field(ZNAM, "OK")
+    field(ONAM, "NOK")
+    field(VAL, "1")
+    field(PINI, "YES")
+    field(FLNK, "$(D):EN_CMD_BUS$(SIGNAL)")
+}
+
+record(fanout, "$(D):EN_CMD_BUS$(SIGNAL)"){
+    field(LNK0, "$(D):EN_CMD_PBUS$(SIGNAL)")
+    field(LNK1, "$(D):EN_CMD_NBUS$(SIGNAL)")
+}
+
+record(calcout, "$(D):EN_CMD_PBUS$(SIGNAL)"){
+    field(INPA, "$(D):EN_CMD_PAIR$(SIGNAL) NPP MS")
+    field(CALC, "A")
+    field(OUT, "$(D):EN_CMD_PIN$(PBUS) PP")
+}
+
+record(calcout, "$(D):EN_CMD_NBUS$(SIGNAL)"){
+    field(INPA, "$(D):EN_CMD_PAIR$(SIGNAL) NPP MS")
+    field(CALC, "!A")
+    field(OUT, "$(D):EN_CMD_PIN$(NBUS) PP")
+}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display version="2.0.0">
+  <name>Display</name>
+  <width>80</width>
+  <height>20</height>
+  <widget type="bool_button" version="2.0.0">
+    <name>Boolean Button_1</name>
+    <pv_name>$(D):MODE_CMD_PIN$(N)</pv_name>
+    <width>40</width>
+    <height>20</height>
+  </widget>
+  <widget type="bool_button" version="2.0.0">
+    <name>Boolean Button_2</name>
+    <pv_name>$(D):EN_CMD_PIN$(N)</pv_name>
+    <x>40</x>
+    <width>40</width>
+    <height>20</height>
+    <rules>
+      <rule name="New Rule" prop_id="enabled" out_exp="false">
+        <exp bool_exp="pv0==1">
+          <value>true</value>
+        </exp>
+        <exp bool_exp="pv0==0">
+          <value>true</value>
+        </exp>
+        <pv_name>$(D):MODE_CMD_PIN$(N)</pv_name>
+      </rule>
+    </rules>
+  </widget>
+</display>

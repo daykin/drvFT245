@@ -10,8 +10,8 @@ static void pinPollTaskC(void* drvPvt){
 drvFT245::drvFT245(const std::string& portName)
     :asynPortDriver(portName.c_str(), //portName
     0,//Max Signals
-    asynUInt32DigitalMask|asynOctetMask|asynCommonMask,//iface mask
-    asynUInt32DigitalMask|asynOctetMask,//interrupt mask
+    asynUInt32DigitalMask|asynOctetMask|asynInt32Mask|asynDrvUserMask,//iface mask
+    asynUInt32DigitalMask,//interrupt mask
     0,//asynFlags
     1,//autoConnect
     0,//priority
@@ -23,8 +23,8 @@ drvFT245::drvFT245(const std::string& portName)
 drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
     :asynPortDriver(portName.c_str(),
     0,//Max Signals
-    asynUInt32DigitalMask|asynOctetMask|asynCommonMask,//iface mask
-    asynUInt32DigitalMask|asynOctetMask,//interrupt mask
+    asynUInt32DigitalMask|asynOctetMask|asynDrvUserMask,//iface mask
+    asynUInt32DigitalMask,//interrupt mask
     0,//asyn flags
     1,//autoConnect
     0,//priority
@@ -32,10 +32,13 @@ drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
     {
         const char *functionName = "drvFT245";
         int status = asynSuccess;
-        status |= createParam(serialNumberString, asynParamOctet, &FT245serialNumber);
-        status |= createParam(deviceDescriptionString, asynParamOctet, &deviceDescription);
-        status |= createParam(pinDirectionString, asynParamUInt32Digital, &pinDirection);
-        status |= createParam(pinSettingString, asynParamUInt32Digital, &pinSetting);
+        status |= createParam(serialNumberString,       asynParamOctet,         &serialNumber);
+        status |= createParam(manufacturerString,       asynParamOctet,         &manufacturer);
+        status |= createParam(deviceDescriptionString,  asynParamOctet,         &deviceDescription);
+        status |= createParam(deviceIdString,           asynParamInt32,         &deviceID);
+        status |= createParam(pinDirectionString,       asynParamUInt32Digital, &pinDirection);
+        status |= createParam(pinSettingString,         asynParamUInt32Digital, &pinSetting);
+        status |= createParam(ftdiVersionString,        asynParamOctet,         &ftdiVersion);
         if((ftdi=ftdi_new())==0){
             printf("%s:%s: Unable to initialize libftdi context.\n", driverName, functionName);
             status=asynError;
@@ -54,7 +57,7 @@ drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
             printf("%s:%s: Unable to enumerate FT245 devices (usb_find_all() failed).\n", driverName, functionName);
         }
         else{
-            char manufacturer[128], desc[128], serial[128];
+            char mfr[128], desc[128], serial[128];
             int i=0;
             int usedDeviceIndex=deviceIndex;
             if (deviceIndex>(unsigned)nDevices){
@@ -66,15 +69,16 @@ drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
             deviceToOpen=devices;
             device=devices;
             do{
-                ftdi_usb_get_strings(ftdi, device->dev, (char*)manufacturer, 128, (char*)desc, 128, (char*)serial, 128);
-                printf("Index %d: Manufacturer %s, Description %s, Serial %s\n", i, manufacturer, desc, serial);
+                ftdi_usb_get_strings(ftdi, device->dev, (char*)mfr, 128, (char*)desc, 128, (char*)serial, 128);
+                printf("Index %d: Manufacturer %s, Description %s, Serial %s\n", i, mfr, desc, serial);
                 if(i==usedDeviceIndex){
                     deviceToOpen=device;
                     lock();
-                    setStringParam(FT245serialNumber, "asdfasfd");//(strlen(serial)==0)?"Undefined":serial);
-                    setStringParam(deviceDescription, "something");
+                    setIntegerParam(deviceID, i);
+                    setStringParam(serialNumber,(strlen(serial)==0)?"No serial specified":serial);
+                    setStringParam(deviceDescription, (strlen(desc)==0)?"No description specified":desc);
+                    setStringParam(manufacturer, (strlen(mfr)==0)?"No manufacturer Specified":mfr);
                     unlock();
-                    callParamCallbacks();
                 }
                 if(device->next!=NULL)device=device->next;
                 i++;
