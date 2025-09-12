@@ -12,6 +12,7 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 DB += ft245_pin.template
 DB += ft245.template
+DB += ft245-simple.db
 
 #----------------------------------------------------
 # If <anyname>.db template is not named <anyname>*.template add

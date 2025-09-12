@@ -6,8 +6,9 @@
 #include <epicsThread.h>
 #include <epicsExport.h>
 #include <iocsh.h>
+#include <string.h>
 
-#define serialNumberString      "serialNumber"
+#define serialNumberString      "FT245serialNumber"
 #define manufacturerString      "manufacturer"
 #define deviceDescriptionString "deviceDescription"
 #define deviceIdString          "deviceID"
@@ -24,17 +25,15 @@ class drvFT245 : public asynPortDriver {
         drvFT245(const std::string& portName, const unsigned& deviceIndex);
         virtual asynStatus readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask);
         virtual asynStatus writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask);
-        int serialNumber;
+        virtual asynStatus readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason);
         //Must be public, called from C
         void pinPollTask();
-        #define FIRST_FT245_PARAM serialNumber
-        int manufacturer;
+        int FT245serialNumber;
+        #define FIRST_FT245_PARAM FT245serialNumber
         int deviceDescription;
-        int deviceId;
         int pinDirection;
         int pinSetting;
-        int ftdiVersion;
-        #define NUM_PARAMS 7
+        #define NUM_PARAMS 4
     private:
         struct ftdi_context *ftdi;
         struct ftdi_version_info version;

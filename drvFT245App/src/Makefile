@@ -28,6 +28,7 @@ drvFT245_LIBS += asyn
 drvFT245_INC += drvFT245.h
 drvFT245_SRCS += drvFT245.cpp
 
+USR_CPPFLAGS += -g -O0
 USR_CPPFLAGS += $(shell pkg-config --cflags libftdi1)
 USR_LDFLAGS += $(shell pkg-config --libs libftdi1)
 LIB_SYS_LIBS += ftdi1 usb-1.0

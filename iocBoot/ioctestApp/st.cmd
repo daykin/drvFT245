@@ -12,11 +12,15 @@
 cd "${TOP}"
 
 ## Register all support components
-dbLoadDatabase "dbd/test.dbd"
+dbLoadDatabase "$(TOP)/dbd/test.dbd"
 test_registerRecordDeviceDriver pdbbase
 
+epicsEnvSet("PORT", "FT245A")
+drvFT245Configure("$(PORT)", 0)
+asynSetTraceMask("$(PORT)",-1, 255)
+asynSetTraceIOMask("$(PORT)",-1,255)
 ## Load record instances
-#dbLoadRecords("db/test.db","user=daykin")
+dbLoadRecords("$(TOP)/db/ft245-simple.db","D=TEST_FT245, PORT=$(PORT), TIMEOUT=1")
 
 cd "${TOP}/iocBoot/${IOC}"
 iocInit

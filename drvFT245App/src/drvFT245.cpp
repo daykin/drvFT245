@@ -8,81 +8,82 @@ static void pinPollTaskC(void* drvPvt){
 }
 
 drvFT245::drvFT245(const std::string& portName)
-    :asynPortDriver(portName.c_str(),
-    1,//Max Signals
-    NUM_PARAMS,
-    asynUInt32DigitalMask|asynOctetMask,//iface mask
-    0,//interrupt mask
-    1,
-    0,
-    0)
+    :asynPortDriver(portName.c_str(), //portName
+    0,//Max Signals
+    asynUInt32DigitalMask|asynOctetMask|asynCommonMask,//iface mask
+    asynUInt32DigitalMask|asynOctetMask,//interrupt mask
+    0,//asynFlags
+    1,//autoConnect
+    0,//priority
+    0) //stackSize)
     {
         drvFT245(portName, 0);
     }
 
 drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
     :asynPortDriver(portName.c_str(),
-    1,//Max Signals
-    NUM_PARAMS,
-    asynUInt32DigitalMask|asynOctetMask,//iface mask
-    0,//interrupt mask
-    1,
-    0,
-    0)
+    0,//Max Signals
+    asynUInt32DigitalMask|asynOctetMask|asynCommonMask,//iface mask
+    asynUInt32DigitalMask|asynOctetMask,//interrupt mask
+    0,//asyn flags
+    1,//autoConnect
+    0,//priority
+    0)//stackSize
     {
         const char *functionName = "drvFT245";
         int status = asynSuccess;
-        status |= createParam(serialNumberString, asynParamOctet, &serialNumber);
-        status |= createParam(manufacturerString, asynParamOctet, &manufacturer);
+        status |= createParam(serialNumberString, asynParamOctet, &FT245serialNumber);
         status |= createParam(deviceDescriptionString, asynParamOctet, &deviceDescription);
-        status |= createParam(deviceIdString, asynParamInt32, &deviceId);
         status |= createParam(pinDirectionString, asynParamUInt32Digital, &pinDirection);
         status |= createParam(pinSettingString, asynParamUInt32Digital, &pinSetting);
-        status |= createParam(ftdiVersionString, asynParamOctet, &ftdiVersion);
-        if((ftdi=ftdi_new())!=0){
-            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to initialize libftdi context.\n", driverName, functionName);
+        if((ftdi=ftdi_new())==0){
+            printf("%s:%s: Unable to initialize libftdi context.\n", driverName, functionName);
             status=asynError;
         }
         else{
-            asynPrint(pasynUserSelf, ASYN_TRACEINFO_SOURCE, "%s:%s: Initialized libftdi context.\n", driverName, functionName);
+            printf("%s:%s: Initialized libftdi context.\n", driverName, functionName);
         }
         char *versionString[8];
         version = ftdi_get_library_version();
         sprintf(*versionString, "%d.%d.%d", version.major, version.minor, version.micro);
-        status |= setStringParam(ftdiVersion, (const char*)versionString);
+        //status |= setStringParam(ftdiVersion, (const char*)versionString);
 
         struct ftdi_device_list *devices, *device, *deviceToOpen;
         int nDevices = ftdi_usb_find_all(ftdi, &devices, FT245_VENDOR_ID, FT245_DEVICE_ID);
         if(nDevices < 0){
-            asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to enumerate FT245 devices (usb_find_all() failed).\n", driverName, functionName);
+            printf("%s:%s: Unable to enumerate FT245 devices (usb_find_all() failed).\n", driverName, functionName);
         }
         else{
             char manufacturer[128], desc[128], serial[128];
             int i=0;
             int usedDeviceIndex=deviceIndex;
             if (deviceIndex>(unsigned)nDevices){
-                asynPrint(pasynUserSelf, ASYN_TRACE_WARNING, "%s:%s: Index %d was specified but there are only %d devices seen. Defaulting to 0.\n", driverName, functionName, nDevices, deviceIndex);
+                printf("%s:%s: Index %d was specified but there are only %d devices seen. Defaulting to 0.\n", driverName, functionName, nDevices, deviceIndex);
                 usedDeviceIndex = 0;
             }
-            asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "%s:%s: I see the following devices:\n", driverName, functionName);
+            printf("%s:%s: I see the following devices:\n", driverName, functionName);
             //default initialization to first/only available device
             deviceToOpen=devices;
-            for(device=devices;device->next!=NULL;i++){
+            device=devices;
+            do{
                 ftdi_usb_get_strings(ftdi, device->dev, (char*)manufacturer, 128, (char*)desc, 128, (char*)serial, 128);
-                asynPrint(pasynUserSelf, ASYN_TRACEIO_DEVICE, "Index %d: Manufacturer %s, Description %s, Serial %s\n", i, manufacturer, desc, serial);
+                printf("Index %d: Manufacturer %s, Description %s, Serial %s\n", i, manufacturer, desc, serial);
                 if(i==usedDeviceIndex){
                     deviceToOpen=device;
-                    setIntegerParam(deviceId, i);
-                    setStringParam(serialNumber, serial);
-                    setStringParam(deviceDescription, desc);
-                } 
-                device=device->next;
-            }
+                    lock();
+                    setStringParam(FT245serialNumber, "asdfasfd");//(strlen(serial)==0)?"Undefined":serial);
+                    setStringParam(deviceDescription, "something");
+                    unlock();
+                    callParamCallbacks();
+                }
+                if(device->next!=NULL)device=device->next;
+                i++;
+            }while(device->next!=NULL);
             if(ftdi_usb_open_dev(ftdi, deviceToOpen->dev)<0){
-                asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Unable to open FTDI device (usb_open() failed).\n", driverName, functionName);
+                printf("%s:%s: Unable to open FTDI device (usb_open() failed).\n", driverName, functionName);
             }
             else{
-                asynPrint(pasynUserSelf, ASYN_TRACEINFO_SOURCE, "%s:%s: Opened device connection.\n", driverName, functionName);
+                printf("%s:%s: Opened device connection.\n", driverName, functionName);
             }
             ftdi_list_free(&devices);
             epicsThreadCreate("pinPollTask", 0, 0, &pinPollTaskC, this);
@@ -106,6 +107,12 @@ asynStatus drvFT245::readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, 
     }
     asynPortDriver::readUInt32Digital(pasynUser, value, mask);
     return (asynStatus)status;
+}
+
+asynStatus drvFT245::readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int *eomReason){
+    asynStatus status =  asynPortDriver::readOctet(pasynUser, value, maxChars, nActual, eomReason);
+    callParamCallbacks();
+    return status;
 }
 
 asynStatus drvFT245::writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask){
@@ -151,15 +158,17 @@ void drvFT245::pinPollTask(){
             asynPrint(pasynUserSelf, ASYN_TRACE_ERROR, "%s:%s: Driver Failed to read pins (%d)\n", driverName, functionName, ret);
         }
         if(value != lastValue){
+            lock();
             setUIntDigitalParam(pinSetting, (epicsUInt32)value, 0xFF);
+            unlock();
             callParamCallbacks();
-            asynPrint(pasynUserSelf, ASYN_TRACE_FLOW, "%s:%s:Detected change on pins (%#04x->%#04x)",driverName, functionName, lastValue, value);
+            asynPrint(pasynUserSelf, ASYN_TRACE_FLOW, "%s:%s:Detected change on pins (%#04x->%#04x)\n",driverName, functionName, lastValue, value);
         }
         lastValue=value;
     }
 }
 
-extern "C" int drvFT245Config(const char *portName, const unsigned& deviceIndex){
+extern "C" int drvFT245Configure(const char *portName, const unsigned& deviceIndex){
     new drvFT245(portName, deviceIndex);
     return asynSuccess;
 }
@@ -170,10 +179,10 @@ static const iocshArg FT245DriverConfigArg1 = {"Device Index", iocshArgInt};
 static const iocshArg * const FT245DriverConfigArgs[] = {&FT245DriverConfigArg0,
                                                          &FT245DriverConfigArg1};
 
-static const iocshFuncDef configFT245Driver = {"drvFT245Config", 2, FT245DriverConfigArgs};
+static const iocshFuncDef configFT245Driver = {"drvFT245Configure", 2, FT245DriverConfigArgs};
 static void configFT245DriverCallFunc(const iocshArgBuf *args)
 {
-    drvFT245Config(args[0].sval, args[1].ival);
+    drvFT245Configure(args[0].sval, args[1].ival);
 }
 
 static void drvFT245Register(void)

@@ -1,0 +1,45 @@
+record(waveform, "$(D):SERIAL"){
+    field(DESC, "Serial number of this FT245")
+    field(DTYP, "asynOctetRead")
+    field(PINI, "YES")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))FT245serialNumber")
+}
+
+record(waveform, "$(D):DESC"){
+    field(DESC, "Device Description of this FT245")
+    field(DTYP, "asynOctetRead")
+    field(PINI, "YES")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(INP, "@asyn($(PORT) 0 $(TIMEOUT))deviceDescription")
+}
+
+record(longout, "$(D):MODE_CMD_PINS"){
+    field(DESC, "Pin direction setting")
+    field(DTYP, "asynUInt32Digital")
+    field(VAL, "7")
+    field(PINI, "YES")
+    field(OUT, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinDirection")
+    field(FLNK, "$(D):MODE_RCMD_PINS")
+}
+
+record(longin, "$(D):MODE_RCMD_PINS"){
+    field(DESC, "Pin direction setting")
+    field(DTYP, "asynUInt32Digital")
+    field(INP, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinDirection")
+}
+
+record(longout, "$(D):EN_CMD_PINS"){
+    field(DESC, "Pin write")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinSetting")
+}
+
+record(longin, "$(D):EN_RCMD_PINS"){
+    field(DESC, "Pin read")
+    field(DTYP, "asynUInt32Digital")
+    field(SCAN, "I/O Intr")
+    field(INP, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinSetting")
+}
