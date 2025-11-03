@@ -80,8 +80,11 @@ record(mbbiDirect, "$(D):EN_RCMD_PINS"){
     field(INP, "@asynMask($(PORT) 0 255 $(TIMEOUT))pinSetting")
 }
 
-substitute "SIGNAL=0, PBUS=0, NBUS=1"
-include "differential_pair.template"
+substitute "SIGNAL=IN, PBUS=0, NBUS=1"
+include "differential_pair_in.template"
 
-substitute "SIGNAL=1, PBUS=2, NBUS=3"
-include "differential_pair.template"
+substitute "SIGNAL=NOK, PBUS=3, NBUS=4"
+include "differential_pair_out.template"
+
+substitute "SIGNAL=NOKL, PBUS=6, NBUS=7"
+include "differential_pair_out.template"

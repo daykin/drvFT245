@@ -86,7 +86,7 @@
   </widget>
   <widget type="bool_button" version="2.0.0">
     <name>Boolean Button_2</name>
-    <pv_name>$(D):EN_CMD_PAIR0</pv_name>
+    <pv_name>$(D):EN_CMD_NOK</pv_name>
     <x>20</x>
     <y>210</y>
     <off_label>Live OK</off_label>
@@ -94,10 +94,25 @@
   </widget>
   <widget type="bool_button" version="2.0.0">
     <name>Boolean Button_3</name>
-    <pv_name>$(D):EN_CMD_PAIR1</pv_name>
+    <pv_name>$(D):EN_CMD_NOKL</pv_name>
     <x>20</x>
     <y>250</y>
     <off_label>Latch OK</off_label>
     <on_label>Latch NOK</on_label>
+  </widget>
+  <widget type="led" version="2.0.0">
+    <name>LED</name>
+    <pv_name>$(D):EN_RSTS_IN</pv_name>
+    <x>100</x>
+    <y>290</y>
+  </widget>
+  <widget type="label" version="2.0.0">
+    <name>Label_2</name>
+    <text>NPERMIT</text>
+    <x>20</x>
+    <y>290</y>
+    <width>70</width>
+    <horizontal_alignment>1</horizontal_alignment>
+    <vertical_alignment>1</vertical_alignment>
   </widget>
 </display>

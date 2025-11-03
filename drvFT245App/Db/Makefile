@@ -12,7 +12,8 @@ include $(TOP)/configure/CONFIG
 # databases, templates, substitutions like this
 DB += ft245_pin.template
 DB += ft245.db
-DB += differential_pair.template
+DB += differential_pair_in.template
+DB += differential_pair_out.template
 DB += ft245-simple.db
 
 #----------------------------------------------------

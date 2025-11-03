@@ -1,0 +1,13 @@
+record(calc, "$(D):EN_CALC_$(SIGNAL)"){
+    field(INPA, "$(D):EN_RCMD_PINS CPP MS")
+    field(CALC, "(A&(1<<$(PBUS)|1<<$(NBUS)))!=2") #BUS- High, BUS+ Low => OK
+    field(FLNK, "$(D):EN_RSTS_$(SIGNAL)")
+}
+
+record(bi, "$(D):EN_RSTS_$(SIGNAL)"){
+    field(INP, "$(D):EN_CALC_$(SIGNAL)")
+    field(ZNAM, "OK")
+    field(ONAM, "NOK")
+    field(VAL, "1")
+    field(PINI, "YES")
+}
