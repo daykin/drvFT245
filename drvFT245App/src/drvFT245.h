@@ -16,8 +16,15 @@
 #define pinSettingString        "pinSetting"
 #define ftdiVersionString       "ftdiVersion"
 
-#define FT245_VENDOR_ID 0x0403
-#define FT245_DEVICE_ID 0x6001
+#define FTDI_VENDOR_ID 0x0403
+#define FT232BMLQ_PID  0x6001
+#define FT245BMLQ_PID  0x6001
+#define FT232RLQ_PID   0x6001
+#define FT245RLQ_PID   0x6001
+#define FT2232CDL_PID  0x6010
+#define FT2232HL_PID   0x6010
+#define FT4232HLQ_PID  0x6011
+#define FT232HLQ_PID   0x6014
 
 class drvFT245 : public asynPortDriver {
     public:

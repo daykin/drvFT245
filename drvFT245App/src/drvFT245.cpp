@@ -52,7 +52,7 @@ drvFT245::drvFT245(const std::string& portName, const unsigned& deviceIndex)
         //status |= setStringParam(ftdiVersion, (const char*)versionString);
 
         struct ftdi_device_list *devices, *device, *deviceToOpen;
-        int nDevices = ftdi_usb_find_all(ftdi, &devices, FT245_VENDOR_ID, FT245_DEVICE_ID);
+        int nDevices = ftdi_usb_find_all(ftdi, &devices, 0x0, 0x0);
         if(nDevices < 0){
             printf("%s:%s: Unable to enumerate FT245 devices (usb_find_all() failed).\n", driverName, functionName);
         }
